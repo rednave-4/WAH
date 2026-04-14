@@ -1,0 +1,83 @@
+{
+  "chapters": [
+    {
+      "id": "ch1", "name": "Pemrograman Dasar dengan C++", "color": "#3b82f6",
+      "subs": [
+        {"id":"c1s1","name":"01. Keluaran dan Ekspresi Sederhana","total":7},
+        {"id":"c1s2","name":"02. Variabel dan Tipe Data","total":8},
+        {"id":"c1s3","name":"03. Perulangan","total":9},
+        {"id":"c1s4","name":"04. Percabangan","total":8},
+        {"id":"c1s5","name":"05. Perulangan & Percabangan","total":8},
+        {"id":"c1s6","name":"06. Larik (Array)","total":8},
+        {"id":"c1s7","name":"07. Fungsi","total":11},
+        {"id":"c1s8","name":"08. Tipe Data Lainnya","total":6},
+        {"id":"c1s9","name":"09. Rekursi","total":7},
+        {"id":"c1s10","name":"10. Menggunakan Kompilator","total":6},
+        {"id":"c1s11","name":"11. Analisis Kompleksitas","total":6},
+        {"id":"c1s12","name":"12. Latihan Pemantapan Materi","total":9}
+      ]
+    },
+    {
+      "id": "ch2", "name": "Pemrograman Kompetitif Dasar", "color": "#7c3aed",
+      "subs": [
+        {"id":"c2s1","name":"01. Perkenalan Pemrograman Kompetitif","total":5},
+        {"id":"c2s2","name":"02. Matematika Diskret Dasar","total":10},
+        {"id":"c2s3","name":"03. Pencarian dan Pengurutan","total":7},
+        {"id":"c2s4","name":"04. Brute Force","total":9},
+        {"id":"c2s5","name":"05. Divide and Conquer","total":3},
+        {"id":"c2s6","name":"06. Greedy","total":9},
+        {"id":"c2s7","name":"07. Dynamic Programming","total":10},
+        {"id":"c2s8","name":"08. Struktur Data Dasar","total":5},
+        {"id":"c2s9","name":"09. Perkenalan Graf","total":7},
+        {"id":"c2s10","name":"10. Struktur Data Non-Linear","total":4},
+        {"id":"c2s11","name":"11. Algoritma Graf","total":6},
+        {"id":"c2s12","name":"12. Dasar-Dasar Geometri","total":4},
+        {"id":"c2s13","name":"13. Persiapan Kompetisi","total":9}
+      ]
+    },
+    {
+      "id": "ch3", "name": "Pemrograman Kompetitif Lanjutan", "color": "#10b981",
+      "subs": [
+        {"id":"c3s1","name":"01. Pencarian Biner Lanjutan","total":5},
+        {"id":"c3s2","name":"02. Struktur Data Lanjutan","total":11},
+        {"id":"c3s3","name":"03. Geometri Komputasional","total":6},
+        {"id":"c3s4","name":"04. Divide and Conquer Lanjutan","total":6},
+        {"id":"c3s5","name":"05. Dynamic Programming Lanjutan","total":0},
+        {"id":"c3s6","name":"06. Graf Lanjutan","total":0},
+        {"id":"c3s7","name":"07. Maximum Flow","total":0}
+      ]
+    }
+  ],
+  "osn": [
+    {"year":"2025","name":"OSN Informatika 2025","loc":"Malang, Jawa Timur","problems":9},
+    {"year":"2025s","name":"OSN Informatika 2025 - Semifinal","loc":"Daring","problems":3},
+    {"year":"2024","name":"OSN Informatika 2024","loc":"DKI Jakarta","problems":9},
+    {"year":"2023","name":"OSN Informatika 2023","loc":"Bogor, Jawa Barat","problems":6},
+    {"year":"2022","name":"OSN Informatika 2022","loc":"Daring","problems":6},
+    {"year":"2021","name":"KSN Informatika 2021","loc":"Daring","problems":9},
+    {"year":"2020","name":"KSN Informatika 2020","loc":"Daring","problems":9},
+    {"year":"2019","name":"OSN Informatika 2019","loc":"Manado, Sulawesi Utara","problems":9},
+    {"year":"2018","name":"OSN Informatika 2018","loc":"Padang, Sumatera Barat","problems":9},
+    {"year":"2017","name":"OSN Informatika 2017","loc":"Pekanbaru, Riau","problems":9},
+    {"year":"2016","name":"OSN Informatika 2016","loc":"Palembang, Sumatera Selatan","problems":9},
+    {"year":"2015","name":"OSN Informatika 2015","loc":"D. I. Yogyakarta","problems":9},
+    {"year":"2014","name":"OSN Informatika 2014","loc":"Mataram, Nusa Tenggara Barat","problems":11},
+    {"year":"2013","name":"OSN Informatika 2013","loc":"Bandung, Jawa Barat","problems":11},
+    {"year":"2012","name":"OSN Informatika 2012","loc":"DKI Jakarta","problems":8},
+    {"year":"2011","name":"OSN Informatika 2011","loc":"Manado, Sulawesi Utara","problems":12},
+    {"year":"2010","name":"OSN Informatika 2010","loc":"Medan, Sumatera Utara","problems":17},
+    {"year":"2009","name":"OSN Informatika 2009","loc":"DKI Jakarta","problems":12},
+    {"year":"2008","name":"OSN Informatika 2008","loc":"Makassar, Sulawesi Selatan","problems":12},
+    {"year":"2007","name":"OSN Informatika 2007","loc":"Surabaya, Jawa Timur","problems":4},
+    {"year":"2006","name":"OSN Informatika 2006","loc":"Semarang, Jawa Tengah","problems":4},
+    {"year":"2005","name":"OSN Informatika 2005","loc":"DKI Jakarta","problems":6}
+  ],
+  "osnp": [
+    {"year":"2025","name":"OSN-P Informatika 2025","loc":"","problems":6},
+    {"year":"2024","name":"OSN-P Informatika 2024","loc":"","problems":6},
+    {"year":"2023","name":"OSN-P Informatika 2023 - Bagian B","loc":"","problems":5},
+    {"year":"2022","name":"OSN-P Informatika 2022 - Bagian B","loc":"","problems":5},
+    {"year":"2021","name":"KSN-P Informatika 2021 - Bagian B","loc":"","problems":5},
+    {"year":"2020","name":"KSN-P Informatika 2020 - Bagian B","loc":"","problems":6}
+  ]
+}

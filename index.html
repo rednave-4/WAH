@@ -1,0 +1,258 @@
+// ═══════════════════════════════════════
+// ui.js — topics, pomodoro, activity
+// ═══════════════════════════════════════
+
+// ── TOPICS ──
+function renderTopics() {
+  const grid = document.getElementById('topicGrid');
+  grid.innerHTML = S.topics.map(t => {
+    const pct = Math.round(t.prog||0);
+    const bc  = t.status==='mastered'?'badge-ok':t.status==='learning'?'badge-learn':'badge-lock';
+    const bl  = t.status==='mastered'?'Mastered':t.status==='learning'?'Learning':'Locked';
+    const col = t.status==='mastered'?'#10b981':t.status==='learning'?'#7c3aed':'#374151';
+    return `<div class="tcard ${t.status}" onclick="trainTopic('${t.key}')">
+      <div class="tcard-top">
+        <span class="tcard-name">${t.name}</span>
+        <span class="badge ${bc}">${bl}</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" style="background:${col};width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--muted)">
+        <span>${pct}%</span>
+        <span>${t.status==='locked'?'Unlock: '+t.xpUnlock+' total XP':'+8 XP per klik'}</span>
+      </div>
+    </div>`;
+  }).join('');
+  renderCustomTopicsGrid();
+}
+
+function trainTopic(key) {
+  const t = S.topics.find(x => x.key === key);
+  if (!t) return;
+  if (t.status === 'locked')    { notify('Locked! Butuh ' + t.xpUnlock + ' total XP', 'err'); return; }
+  if (t.status === 'mastered')  { notify(t.name + ' sudah 100% — tidak ada XP lagi.', 'up'); return; }
+  t.prog = Math.min(100, (t.prog||0) + 5);
+  if (t.prog >= 100) { t.status = 'mastered'; notify(t.name + ' MASTERED! +8 XP', 'up'); }
+  else notify(t.name + ' +5% · +8 XP', 'ok');
+  gainXP(8); saveState(); renderTopics();
+}
+
+function checkTopicUnlocks() {
+  S.topics.forEach(t => {
+    if (t.status === 'locked' && S.totalXP >= t.xpUnlock) {
+      t.status = 'learning';
+      notify('Topik baru terbuka: ' + t.name, 'up');
+    }
+  });
+  saveState(); renderTopics();
+}
+
+// Custom topics
+function renderCustomTopicsGrid() {
+  const grid = document.getElementById('customTopicGrid'); if (!grid) return;
+  if (!S.customTopics || !S.customTopics.length) { grid.innerHTML = ''; return; }
+  grid.innerHTML = S.customTopics.map((t,i) => {
+    const pct = Math.round(t.prog||0);
+    const col = t.status==='mastered'?'#fbbf24':'#f59e0b';
+    return `<div class="tcard" style="border-color:rgba(251,191,36,.25)">
+      <div class="tcard-top">
+        <span class="tcard-name">${t.name}</span>
+        <span class="badge ${t.status==='mastered'?'badge-ok':'badge-gold'}">${t.status==='mastered'?'Mastered':'Custom'}</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" style="background:${col};width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px">
+        <span style="font-size:10px;color:var(--muted)">${pct}%</span>
+        <div class="row" style="gap:4px">
+          <button class="btn btn-sm btn-gold" style="padding:3px 8px;font-size:10px" onclick="trainCustomTopic(${i})">+5%</button>
+          <button class="btn btn-sm btn-red" style="padding:3px 6px;font-size:10px" onclick="removeCustomTopic(${i})">×</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addCustomTopic() {
+  const name = prompt('Nama topik baru:'); if (!name || !name.trim()) return;
+  if (!S.customTopics) S.customTopics = [];
+  S.customTopics.push({key:'c_'+Date.now(), name:name.trim(), prog:0, status:'learning', custom:true});
+  saveState(); renderTopics(); notify('Topik baru: ' + name.trim(), 'ok');
+}
+function trainCustomTopic(i) {
+  const t = S.customTopics[i]; if (!t) return;
+  if (t.status === 'mastered') { notify(t.name + ' sudah 100%', 'up'); return; }
+  t.prog = Math.min(100, (t.prog||0)+5);
+  if (t.prog >= 100) { t.status='mastered'; notify(t.name+' MASTERED! +8 XP','up'); }
+  gainXP(8); saveState(); renderCustomTopicsGrid();
+}
+function removeCustomTopic(i) {
+  if (!confirm('Hapus "'+S.customTopics[i].name+'"?')) return;
+  S.customTopics.splice(i,1); saveState(); renderCustomTopicsGrid();
+}
+
+// ── POMODORO ──
+const CIRC = 2 * Math.PI * 84;
+let pomoTimer = null, pomoLeft = 0, pomoTotal = 0, pomoPhase = 'focus', pomoCycle = 0;
+
+function pomoPhaseTime() {
+  const p = S.pomo;
+  return (pomoPhase==='focus'?p.focusMin:pomoPhase==='short'?p.shortMin:p.longMin) * 60;
+}
+function pomoReset() {
+  if (pomoTimer) { clearInterval(pomoTimer); pomoTimer = null; }
+  pomoPhase = 'focus'; pomoCycle = 0;
+  pomoTotal = pomoPhaseTime(); pomoLeft = pomoTotal;
+  renderPomoRing();
+}
+function pomoStart() {
+  if (pomoTimer) return;
+  pomoTimer = setInterval(() => {
+    pomoLeft--;
+    if (pomoLeft <= 0) { clearInterval(pomoTimer); pomoTimer = null; pomoComplete(); }
+    else renderPomoRing();
+  }, 1000);
+}
+function pomoPause() { if (pomoTimer) { clearInterval(pomoTimer); pomoTimer = null; } }
+function pomoComplete() {
+  if (pomoPhase === 'focus') {
+    S.pomo.todaySess++; S.pomo.totalSess++;
+    S.pomo.todayMin += S.pomo.focusMin;
+    const t = new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+    if (!S.pomo.log) S.pomo.log = [];
+    S.pomo.log.unshift({time:t, type:'Fokus '+S.pomo.focusMin+'min', date:today()});
+    if (S.pomo.log.length > 30) S.pomo.log.pop();
+    gainXP(12); notify('Sesi fokus selesai! +12 XP', 'ok');
+    pomoCycle++;
+    pomoPhase = pomoCycle % 4 === 0 ? 'long' : 'short';
+  } else {
+    pomoPhase = 'focus'; notify('Istirahat selesai! Siap fokus lagi.', 'up');
+  }
+  pomoTotal = pomoPhaseTime(); pomoLeft = pomoTotal;
+  saveState(); renderPomoStats(); renderPomoRing();
+  if ('Notification' in window && Notification.permission === 'granted')
+    new Notification('OSN Hunter', {body: pomoPhase==='focus'?'Waktunya fokus!':'Waktunya istirahat!'});
+}
+function pomoRing(elapsed, total, col) {
+  const ring = document.getElementById('pomoRing'); if (!ring) return;
+  ring.style.stroke = col;
+  ring.style.strokeDashoffset = CIRC * (elapsed/total);
+}
+function renderPomoRing() {
+  const m = Math.floor(pomoLeft/60), s = pomoLeft%60;
+  const el = document.getElementById('pomoTime');
+  const mode = document.getElementById('pomoMode');
+  if(el) el.textContent = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  if(mode) mode.textContent = pomoPhase==='focus'?'FOKUS':pomoPhase==='short'?'ISTIRAHAT PENDEK':'ISTIRAHAT PANJANG';
+  const col = pomoPhase==='focus'?'#7c3aed':pomoPhase==='short'?'#10b981':'#3b82f6';
+  const elapsed = pomoTotal - pomoLeft;
+  pomoRing(elapsed, pomoTotal, col);
+}
+function renderPomoStats() {
+  const td = today();
+  if (S.pomo.today !== td) { S.pomo.today=td; S.pomo.todaySess=0; S.pomo.todayMin=0; saveState(); }
+  const el = id => document.getElementById(id);
+  if(el('pomoTodaySess')) el('pomoTodaySess').textContent = S.pomo.todaySess;
+  if(el('pomoTodayMin'))  el('pomoTodayMin').textContent  = S.pomo.todayMin;
+  if(el('pomoTotalSess')) el('pomoTotalSess').textContent = S.pomo.totalSess;
+  const log = document.getElementById('pomoLog');
+  if(log) log.innerHTML = (S.pomo.log||[]).slice(0,10).map(l =>
+    `<div class="pomo-log-item"><span>${l.type}</span><span>${l.time}</span></div>`).join('');
+  const fi = document.getElementById('pomoFocusMin');
+  const si = document.getElementById('pomoShortMin');
+  const li = document.getElementById('pomoLongMin');
+  if(fi) fi.value = S.pomo.focusMin;
+  if(si) si.value = S.pomo.shortMin;
+  if(li) li.value = S.pomo.longMin;
+  renderPomoRing();
+}
+function pomoConfigChange() {
+  if (pomoTimer) { clearInterval(pomoTimer); pomoTimer = null; }
+  S.pomo.focusMin = parseInt(document.getElementById('pomoFocusMin').value)||25;
+  S.pomo.shortMin = parseInt(document.getElementById('pomoShortMin').value)||5;
+  S.pomo.longMin  = parseInt(document.getElementById('pomoLongMin').value)||15;
+  pomoReset(); saveState();
+}
+
+// ── ACTIVITY (streak + calendar) ──
+function renderActivity() { renderStreak(); renderCalendar(); }
+
+function renderStreak() {
+  const el = id => document.getElementById(id);
+  if(el('strCur'))    el('strCur').textContent    = S.streak;
+  if(el('strBest'))   el('strBest').textContent   = S.bestStreak;
+  if(el('strTotal'))  el('strTotal').textContent  = S.activeDays.length;
+  if(el('strSolved')) el('strSolved').textContent = S.totalSolved;
+  const cal = document.getElementById('streakCal'); if (!cal) return;
+  cal.innerHTML = '';
+  const now = new Date();
+  for (let i = 27; i >= 0; i--) {
+    const d = new Date(now); d.setDate(now.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    const act = S.activeDays.includes(key); const isT = i===0;
+    const div = document.createElement('div');
+    div.className = 'sday' + (act?' act':'') + (isT&&!act?' tod':'');
+    div.title = key;
+    cal.appendChild(div);
+  }
+}
+function markToday() {
+  const key = today();
+  if (S.activeDays.includes(key)) { notify('Hari ini sudah ditandai aktif!', 'up'); return; }
+  S.activeDays.push(key); S.streak++;
+  if (S.streak > S.bestStreak) S.bestStreak = S.streak;
+  gainXP(20); notify('Hari aktif! Streak: '+S.streak+' · +20 XP', 'ok');
+  renderStreak(); saveState();
+}
+
+// Calendar
+let calSelectedDate = null;
+function renderCalendar() {
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const yr = S.calYear, mo = S.calMonth;
+  const el = document.getElementById('calMonth'); if(el) el.textContent = months[mo]+' '+yr;
+  let first = new Date(yr,mo,1); let startDay = (first.getDay()+6)%7;
+  const daysInMonth = new Date(yr,mo+1,0).getDate();
+  const grid = document.getElementById('calDays'); if(!grid) return;
+  grid.innerHTML = '';
+  for (let i=0; i<startDay; i++) { const d=document.createElement('div'); d.className='cday empty'; grid.appendChild(d); }
+  const todayStr = today();
+  for (let day=1; day<=daysInMonth; day++) {
+    const ds = `${yr}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isT = ds===todayStr;
+    const hasE = S.events.some(e=>e.date===ds);
+    const div = document.createElement('div');
+    div.className = 'cday'+(isT?' today':'')+(hasE?' has-event':'')+(calSelectedDate===ds?' today':'');
+    div.textContent = day;
+    if(hasE){const dot=document.createElement('div');dot.className='dot';div.appendChild(dot);}
+    div.onclick = ()=>{ calSelectedDate=ds; document.getElementById('evtDate').value=ds; renderCalendar(); renderEventList(); };
+    grid.appendChild(div);
+  }
+  renderEventList();
+}
+function calPrev() { S.calMonth--; if(S.calMonth<0){S.calMonth=11;S.calYear--;} saveState(); renderCalendar(); }
+function calNext() { S.calMonth++; if(S.calMonth>11){S.calMonth=0;S.calYear++;} saveState(); renderCalendar(); }
+function addEvent() {
+  const title = document.getElementById('evtInput').value.trim();
+  const date  = document.getElementById('evtDate').value || today();
+  const color = document.getElementById('evtColor').value;
+  if (!title) return;
+  if (!S.events) S.events = [];
+  S.events.push({id:S.nextEvtId++, title, date, color});
+  document.getElementById('evtInput').value = '';
+  saveState(); renderCalendar(); notify('Jadwal ditambahkan!', 'ok');
+}
+function deleteEvent(id) { S.events=S.events.filter(e=>e.id!==id); saveState(); renderCalendar(); }
+function renderEventList() {
+  const lbl = document.getElementById('calEvtLabel');
+  const filtered = calSelectedDate
+    ? S.events.filter(e=>e.date===calSelectedDate).sort((a,b)=>a.date.localeCompare(b.date))
+    : S.events.sort((a,b)=>a.date.localeCompare(b.date));
+  if(lbl) lbl.textContent = calSelectedDate?'Jadwal '+fmt(calSelectedDate)+' (klik lagi untuk reset)':'Semua Jadwal';
+  const list = document.getElementById('eventList'); if(!list) return;
+  list.innerHTML = filtered.length
+    ? filtered.map(e=>`
+        <div class="event-item">
+          <div class="event-dot" style="background:${e.color}"></div>
+          <div class="event-body"><div class="event-title">${e.title}</div><div class="event-date">${fmt(e.date)}</div></div>
+          <button class="event-del" onclick="deleteEvent(${e.id})">×</button>
+        </div>`).join('')
+    : '<div style="font-size:11px;color:var(--muted)">Belum ada jadwal.</div>';
+}

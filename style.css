@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSN Hunter System</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="logo">OSN<span>⚔</span>HUNTER</div>
+  <div class="hdr-mid">
+    <div class="hdr-name" id="hdrName">Hunter</div>
+    <div class="xp-row">
+      <div class="xp-lbl" id="xpLbl">LV1·0/150</div>
+      <div class="xp-track"><div id="xpFill" class="xp-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div id="rankBadge" class="rank-badge">ROOKIE</div>
+</header>
+
+<!-- NAV -->
+<nav id="nav">
+  <button class="ntab on" onclick="go('status')">Status</button>
+  <button class="ntab" onclick="go('cf')">CF Sync</button>
+  <button class="ntab" onclick="go('grind')">Grind</button>
+  <button class="ntab" onclick="go('pomodoro')">Pomodoro</button>
+  <button class="ntab" onclick="go('topics')">Topik</button>
+  <button class="ntab" onclick="go('activity')">Aktivitas</button>
+  <button class="ntab" onclick="go('notes')">Catatan</button>
+  <button class="ntab" onclick="go('guide')">Guide ⚡</button>
+  <button class="ntab" onclick="go('rank')">Rank</button>
+  <button class="ntab" onclick="go('reward')">Reward</button>
+  <button class="ntab" onclick="go('tlx')">TLX</button>
+  <button class="ntab" onclick="go('atcoder')">AtCoder</button>
+  <button class="ntab" onclick="go('settings')">Pengaturan</button>
+</nav>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="notif" class="notif"></div>
+
+<!-- STATUS -->
+<div id="pane-status" class="pane on">
+  <div class="slbl">Stats Hunter</div>
+  <div class="stat-grid" id="statGrid"></div>
+  <div class="slbl" style="margin-top:12px">Tambah Stat</div>
+  <div class="row" style="margin-bottom:14px;flex-wrap:wrap" id="statBtns"></div>
+  <div class="slbl">Platform Rating</div>
+  <div class="g3" style="margin-bottom:14px">
+    <div class="card" style="text-align:center">
+      <div class="slbl" style="margin-bottom:6px">CODEFORCES</div>
+      <input id="cfRatingInp" class="plat-input" type="number" placeholder="1000" onchange="savePlatRating('cf',this.value)">
+      <div id="cfDivLbl" style="font-size:10px;margin-top:4px;font-weight:600"></div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="slbl" style="margin-bottom:6px">TLX / TOKI</div>
+      <input id="tlxRatingInp" class="plat-input" type="number" placeholder="0" onchange="savePlatRating('tlx',this.value)">
+      <div style="font-size:10px;margin-top:4px;color:var(--muted)">AC Problems</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="slbl" style="margin-bottom:6px">ATCODER</div>
+      <input id="acRatingInp" class="plat-input" type="number" placeholder="400" onchange="savePlatRating('ac',this.value)">
+      <div id="acDivLbl" style="font-size:10px;margin-top:4px;font-weight:600"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CF SYNC -->
+<div id="pane-cf" class="pane">
+  <div class="slbl">Sync Akun Codeforces</div>
+  <div class="row" style="margin-bottom:12px">
+    <input id="cfHandleInp" class="inp" style="flex:1" placeholder="CF handle kamu (misal: tourist)">
+    <button class="btn" onclick="syncCF()">Sync CF ↓</button>
+  </div>
+  <div id="cfProfileArea"></div>
+  <div id="cfDiffArea"></div>
+  <div id="cfTagArea"></div>
+</div>
+
+<!-- GRIND -->
+<div id="pane-grind" class="pane">
+  <div class="slbl">Pilih Rating Target</div>
+  <div class="row" style="flex-wrap:wrap;margin-bottom:12px" id="ratingPicker"></div>
+  <div class="row" style="margin-bottom:12px">
+    <div style="flex:1">
+      <div class="slbl" style="margin-bottom:4px">Filter Tag (opsional)</div>
+      <input id="grindTag" class="inp" style="width:100%" placeholder="misal: dp, greedy, graph...">
+    </div>
+    <div style="padding-top:22px">
+      <button class="btn" onclick="fetchRandomProblem()">Get Problem !</button>
+    </div>
+  </div>
+  <div id="grindProblem"></div>
+  <div class="slbl" style="margin-top:8px">Riwayat Grind</div>
+  <div id="grindHistory"></div>
+</div>
+
+<!-- POMODORO -->
+<div id="pane-pomodoro" class="pane">
+  <div class="pomo-wrap">
+    <div class="pomo-ring-wrap">
+      <svg class="pomo-svg" viewBox="0 0 180 180">
+        <circle cx="90" cy="90" r="84" fill="none" stroke="#252540" stroke-width="6"/>
+        <circle id="pomoRing" cx="90" cy="90" r="84" fill="none" stroke="#7c3aed" stroke-width="6"
+          stroke-dasharray="527.8" stroke-dashoffset="0" stroke-linecap="round"/>
+      </svg>
+      <div style="text-align:center">
+        <div class="pomo-time" id="pomoTime">25:00</div>
+        <div class="pomo-mode" id="pomoMode">FOKUS</div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn btn-teal" onclick="pomoStart()">Start</button>
+      <button class="btn" onclick="pomoPause()">Pause</button>
+      <button class="btn btn-red" onclick="pomoReset()">Reset</button>
+    </div>
+    <div style="width:100%;max-width:360px">
+      <div class="slbl">Pengaturan (menit)</div>
+      <div class="row" style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--muted)">Fokus</label>
+        <input id="pomoFocusMin" class="inp" type="number" value="25" min="1" max="60" style="width:55px;text-align:center" onchange="pomoConfigChange()">
+        <label style="font-size:11px;color:var(--muted)">Pendek</label>
+        <input id="pomoShortMin" class="inp" type="number" value="5" min="1" max="30" style="width:55px;text-align:center" onchange="pomoConfigChange()">
+        <label style="font-size:11px;color:var(--muted)">Panjang</label>
+        <input id="pomoLongMin" class="inp" type="number" value="15" min="1" max="60" style="width:55px;text-align:center" onchange="pomoConfigChange()">
+      </div>
+    </div>
+    <div class="g3" style="width:100%;max-width:360px">
+      <div class="mstat"><div class="mstat-num" id="pomoTodaySess" style="color:#a78bfa">0</div><div class="mstat-lbl">Sesi Hari Ini</div></div>
+      <div class="mstat"><div class="mstat-num" id="pomoTodayMin" style="color:#34d399">0</div><div class="mstat-lbl">Menit Fokus</div></div>
+      <div class="mstat"><div class="mstat-num" id="pomoTotalSess">0</div><div class="mstat-lbl">Total Sesi</div></div>
+    </div>
+    <div style="width:100%;max-width:360px">
+      <div class="slbl">Log Sesi</div>
+      <div id="pomoLog" style="max-height:140px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPICS -->
+<div id="pane-topics" class="pane">
+  <div class="slbl">OSN Topic Roadmap — klik untuk +5% & +8 XP</div>
+  <div class="topic-grid" id="topicGrid"></div>
+  <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+    <button class="btn btn-sm btn-dash" onclick="addCustomTopic()">+ Tambah Topik Sendiri</button>
+    <span style="font-size:10px;color:var(--muted)">Topik custom tampil di bawah</span>
+  </div>
+  <div class="topic-grid" id="customTopicGrid" style="margin-top:8px"></div>
+</div>
+
+<!-- ACTIVITY (streak + calendar) -->
+<div id="pane-activity" class="pane">
+  <div class="slbl">Konsistensi Belajar</div>
+  <div class="g4" style="margin-bottom:14px">
+    <div class="mstat"><div class="mstat-num" id="strCur" style="color:#a78bfa">0</div><div class="mstat-lbl">Streak</div></div>
+    <div class="mstat"><div class="mstat-num" id="strBest">0</div><div class="mstat-lbl">Best</div></div>
+    <div class="mstat"><div class="mstat-num" id="strTotal">0</div><div class="mstat-lbl">Hari Aktif</div></div>
+    <div class="mstat"><div class="mstat-num" id="strSolved" style="color:#34d399">0</div><div class="mstat-lbl">Quest Done</div></div>
+  </div>
+  <div class="slbl">28 Hari Terakhir</div>
+  <div class="cal-lbl-row" style="margin-bottom:3px">
+    <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+  </div>
+  <div class="streak-cal" id="streakCal" style="margin-bottom:10px"></div>
+  <button class="btn btn-teal btn-full" onclick="markToday()" style="margin-bottom:16px">Tandai Hari Ini Aktif (+20 XP)</button>
+
+  <div class="card">
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calPrev()">&#8249;</button>
+      <div class="cal-month" id="calMonth"></div>
+      <button class="cal-nav" onclick="calNext()">&#8250;</button>
+    </div>
+    <div class="cal-lbl-row"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div>
+    <div class="cal-days" id="calDays"></div>
+  </div>
+
+  <div class="row" style="margin-top:10px;margin-bottom:8px">
+    <input id="evtInput" class="inp" style="flex:1" placeholder="Tambah jadwal...">
+    <input id="evtDate" class="inp" type="date" style="width:auto">
+    <select id="evtColor" class="inp" style="width:auto">
+      <option value="#a78bfa">Ungu</option>
+      <option value="#34d399">Hijau</option>
+      <option value="#f87171">Merah</option>
+      <option value="#fbbf24">Kuning</option>
+      <option value="#60a5fa">Biru</option>
+    </select>
+    <button class="btn" onclick="addEvent()">+ Jadwal</button>
+  </div>
+  <div class="slbl" id="calEvtLabel">Semua Jadwal</div>
+  <div id="eventList"></div>
+</div>
+
+<!-- NOTES -->
+<div id="pane-notes" class="pane">
+  <div class="notes-layout">
+    <div>
+      <div class="slbl">Projects</div>
+      <div id="projList"></div>
+      <button class="btn btn-sm btn-full btn-dash" onclick="addProject()" style="margin-top:4px">+ Project Baru</button>
+      <div style="margin-top:12px" class="slbl">Catatan</div>
+      <div id="noteList" style="overflow-y:auto;max-height:280px"></div>
+      <button class="btn btn-sm btn-full" onclick="addNote()" style="margin-top:4px">+ Catatan Baru</button>
+    </div>
+    <div>
+      <div class="note-editor">
+        <div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:4px">
+          <input id="noteTitleInp" class="note-title-inp" placeholder="Judul catatan..." style="flex:1;min-width:120px">
+          <select id="noteProject" class="inp" style="width:auto;font-size:11px"></select>
+          <button class="btn btn-sm btn-red" onclick="deleteNote()" id="delNoteBtn" style="display:none">Hapus</button>
+        </div>
+        <div style="border-top:0.5px solid var(--bor);padding-top:10px">
+          <textarea id="noteBodyInp" class="note-body-inp" placeholder="Tulis catatan, rumus, pseudocode, atau apapun..."></textarea>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div id="noteTimestamp" style="font-size:10px;color:var(--hint)"></div>
+          <button class="btn btn-teal btn-sm" onclick="saveNote()">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div id="pane-guide" class="pane">
+  <div id="guideCountdowns" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:14px"></div>
+  <div class="row" style="flex-wrap:wrap;margin-bottom:10px" id="phaseTabs"></div>
+  <div id="phaseDetail" style="margin-bottom:12px"></div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="slbl" style="margin-bottom:8px">Tanya Claude AI</div>
+    <div id="quickAskBtns" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px"></div>
+    <div class="row">
+      <input id="guideAskInp" class="inp" style="flex:1" placeholder="Tanya tentang materi, strategi, soal...">
+      <button class="btn" onclick="askClaude()">Tanya ↗</button>
+    </div>
+    <div id="guideAnswer" style="display:none;margin-top:10px">
+      <div style="border-top:0.5px solid var(--bor);padding-top:10px;font-size:12px;line-height:1.7" id="guideAnswerText"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="slbl" style="margin-bottom:10px">Readiness Heatmap</div>
+    <div id="readinessHeatmap"></div>
+  </div>
+</div>
+
+<!-- RANK -->
+<div id="pane-rank" class="pane">
+  <div class="slbl">OSN Rank Ladder</div>
+  <div id="rankLadder"></div>
+</div>
+
+<!-- REWARD -->
+<div id="pane-reward" class="pane">
+  <div class="card" style="text-align:center;margin-bottom:12px">
+    <div style="font-family:var(--ft);font-size:28px;font-weight:700;color:#fbbf24" id="xpPool">0</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.5px">XP TERSEDIA</div>
+  </div>
+  <div id="rewardList"></div>
+  <div class="slbl" style="margin-top:8px">Tambah Reward</div>
+  <div class="row">
+    <input id="rInp" class="inp" style="flex:1" placeholder="Nama reward...">
+    <input id="rCost" class="inp" type="number" value="50" style="width:65px;text-align:center">
+    <span style="font-size:11px;color:var(--muted)">XP</span>
+    <button class="btn" onclick="addReward()">+ Reward</button>
+  </div>
+</div>
+
+<!-- TLX -->
+<div id="pane-tlx" class="pane">
+  <div class="plat-sec-title">TLX Course</div>
+  <div class="plat-sec-sub">Progress sub-bab per chapter — klik ✎ untuk update</div>
+  <div id="tlxCourses"></div>
+
+  <div class="plat-sec-title" style="margin-top:18px">TLX Olympiad — OSN</div>
+  <div class="plat-sec-sub">Klik soal untuk toggle AC / WA / Belum · AC = +40 XP (sekali)</div>
+  <div class="tlx-chapter" id="tlx-osn-wrap">
+    <div class="tlx-ch-hdr" onclick="toggleOlympiad('osn')">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div class="tlx-ch-ico" style="background:rgba(251,191,36,.15);color:#fbbf24">OSN</div>
+        <div><div class="tlx-ch-name">OSN Informatika</div><div class="tlx-ch-stat" id="tlxOSNstat">0/0 AC</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="tlx-ch-pct" id="tlxOSNpct">0%</div>
+        <div class="tlx-ch-arr" id="tlxOSNarr">▼</div>
+      </div>
+    </div>
+    <div class="tlx-ch-bar-wrap"><div class="tlx-ch-bar" id="tlxOSNbar" style="background:linear-gradient(90deg,#b45309,#fbbf24)"></div></div>
+    <div class="tlx-ch-body" id="body-tlx-osn">
+      <div id="tlxOSNyears"></div>
+      <button class="btn btn-sm" onclick="addTLXOlympiadContest('OSN')" style="margin-top:8px">+ Tambah Tahun OSN</button>
+    </div>
+  </div>
+
+  <div class="plat-sec-title" style="margin-top:14px">TLX Olympiad — OSN-P</div>
+  <div class="tlx-chapter" id="tlx-osnp-wrap">
+    <div class="tlx-ch-hdr" onclick="toggleOlympiad('osnp')">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div class="tlx-ch-ico" style="background:rgba(249,115,22,.15);color:#fb923c">OSN-P</div>
+        <div><div class="tlx-ch-name">OSN-P Informatika</div><div class="tlx-ch-stat" id="tlxOSNPstat">0/0 AC</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="tlx-ch-pct" id="tlxOSNPpct">0%</div>
+        <div class="tlx-ch-arr" id="tlxOSNParr">▼</div>
+      </div>
+    </div>
+    <div class="tlx-ch-bar-wrap"><div class="tlx-ch-bar" id="tlxOSNPbar" style="background:linear-gradient(90deg,#c2410c,#fb923c)"></div></div>
+    <div class="tlx-ch-body" id="body-tlx-osnp">
+      <div id="tlxOSNPyears"></div>
+      <button class="btn btn-sm" onclick="addTLXOlympiadContest('OSNP')" style="margin-top:8px">+ Tambah Tahun OSN-P</button>
+    </div>
+  </div>
+</div>
+
+<!-- ATCODER -->
+<div id="pane-atcoder" class="pane">
+  <div class="plat-sec-title">AtCoder Progress Table</div>
+  <div class="plat-sec-sub" style="margin-bottom:10px">Klik sel untuk toggle AC / WA · XP hanya diberikan sekali per soal · Virtual scroll — 50 contest per halaman</div>
+  <div class="row" style="margin-bottom:10px;gap:6px;flex-wrap:wrap">
+    <button class="atc-filter-btn on" data-type="ABC" onclick="atcSetFilter('ABC')">ABC (1–500)</button>
+    <button class="atc-filter-btn" data-type="ARC" onclick="atcSetFilter('ARC')">ARC (1–300)</button>
+    <button class="atc-filter-btn" data-type="AGC" onclick="atcSetFilter('AGC')">AGC (1–100)</button>
+    <button class="atc-filter-btn" data-type="AHC" onclick="atcSetFilter('AHC')">AHC (1–50)</button>
+  </div>
+  <div class="g3" style="margin-bottom:12px">
+    <div class="mstat"><div class="mstat-num" id="atcTotalAC" style="color:#34d399">0</div><div class="mstat-lbl">Total AC</div></div>
+    <div class="mstat"><div class="mstat-num" id="atcTotalContest" style="color:#a78bfa">0</div><div class="mstat-lbl">Contest Diisi</div></div>
+    <div class="mstat"><div class="mstat-num" id="atcCompletePct" style="color:#fbbf24">0%</div><div class="mstat-lbl">Completion</div></div>
+  </div>
+  <div class="atc-table-wrap"><div id="atcTable"></div></div>
+  <div id="atcPagination"></div>
+  <div style="margin-top:12px">
+    <div class="slbl">Legend</div>
+    <div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:8px">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:16px;height:16px;border-radius:3px;background:#1e3a5f;display:inline-block"></span><span style="font-size:10px;color:var(--muted)">Belum</span></span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:16px;height:16px;border-radius:3px;background:#166534;display:inline-block"></span><span style="font-size:10px;color:var(--muted)">AC</span></span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:16px;height:16px;border-radius:3px;background:#7c2d12;display:inline-block"></span><span style="font-size:10px;color:var(--muted)">WA/Attempted</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="pane-settings" class="pane">
+  <div class="slbl">Profil</div>
+  <div class="row" style="margin-bottom:14px">
+    <input id="setName" class="inp" style="flex:1" placeholder="Nama hunter...">
+    <button class="btn" onclick="saveName()">Simpan</button>
+  </div>
+
+  <div class="slbl">API Key Claude (untuk fitur Tanya Claude di Guide)</div>
+  <div class="row" style="margin-bottom:6px">
+    <input id="setApiKey" class="inp" type="password" style="flex:1" placeholder="sk-ant-api03-...">
+    <button class="btn" onclick="saveApiKey()">Simpan</button>
+  </div>
+  <div style="font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+    Dapatkan key gratis di <a href="https://console.anthropic.com" target="_blank" style="color:#a78bfa">console.anthropic.com</a>.
+    Key disimpan lokal di browser, tidak dikirim ke mana-mana selain Anthropic.
+  </div>
+
+  <div class="slbl">Zoom Tampilan</div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="row" style="margin-bottom:8px">
+      <span style="font-size:11px;color:var(--muted)">Kecil</span>
+      <input type="range" id="zoomSlider" min="70" max="130" value="100" step="5" style="flex:1" oninput="applyZoom(this.value)">
+      <span style="font-size:11px;color:var(--muted)">Besar</span>
+    </div>
+    <div style="text-align:center;font-family:var(--ft);font-size:18px;color:#a78bfa" id="zoomVal">100%</div>
+    <div class="row" style="justify-content:center;gap:5px;margin-top:8px">
+      <button class="btn btn-sm" onclick="applyZoom(80)">80%</button>
+      <button class="btn btn-sm" onclick="applyZoom(90)">90%</button>
+      <button class="btn btn-sm btn-teal" onclick="applyZoom(100)">100%</button>
+      <button class="btn btn-sm" onclick="applyZoom(110)">110%</button>
+      <button class="btn btn-sm" onclick="applyZoom(120)">120%</button>
+    </div>
+  </div>
+
+  <div class="slbl">Backup &amp; Restore</div>
+  <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px">
+    <button class="btn btn-full" onclick="exportData()">Export data (JSON)</button>
+    <button class="btn btn-full" onclick="document.getElementById('impFile').click()">Import data (JSON)</button>
+    <input type="file" id="impFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="btn btn-red btn-full" onclick="resetAll()">Reset semua data</button>
+  </div>
+  <div style="font-size:11px;color:var(--hint);line-height:1.8">
+    OSN Hunter System v4.0 · Multi-file architecture · Data tersimpan di localStorage.<br>
+    Untuk akses HP & Laptop: upload folder ini ke GitHub Pages (gratis).
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<!-- JS MODULES -->
+<script src="js/app.js"></script>
+<script src="js/cf.js"></script>
+<script src="js/tlx.js"></script>
+<script src="js/atcoder.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/notes.js"></script>
+<script src="js/guide.js"></script>
+<script>
+// TLX olympiad toggle helper (wires HTML onclick to TLX module)
+function toggleOlympiad(type) {
+  const body = document.getElementById('body-tlx-'+type);
+  const arr  = document.getElementById('tlxOSN'+(type==='osn'?'':'P')+'arr');
+  if (body) body.classList.toggle('open');
+  if (arr)  arr.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>
